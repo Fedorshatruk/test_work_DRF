@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from company.validators import validate_director
@@ -33,6 +34,14 @@ class Employee(models.Model):
 
     def __str__(self):
         return f'{self.first_name} {self.last_name} {self.position}'
+
+    def full_clean(self, exclude=None, validate_unique=True):
+        return super(Employee, self).full_clean()
+
+    def validate_unique(self, **kwargs):
+        super(Employee, self).validate_unique(**kwargs)
+        if self.position == self.DIRECTOR and self.department.director:
+            raise ValidationError('У департамента есть директор, сотрудник не может стать директором')
 
 
 class Department(models.Model):
